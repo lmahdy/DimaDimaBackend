@@ -1,0 +1,121 @@
+{% extends 'base_FrontOffice.html.twig' %}
+
+{% block title %}Détails de la Réponse{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .reponse-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .reponse-header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .status-pending {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .status-progress {
+            background-color: #ffc107;
+            color: #343a40;
+        }
+        
+        .status-resolved {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-closed {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .field-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .field-value {
+            margin-bottom: 15px;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            margin-right: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="reponse-details">
+                    <div class="reponse-header d-flex justify-content-between align-items-center">
+                        <h2>Réponse #{{ reponse.id }}</h2>
+                        <span class="status-badge 
+                            {% if reponse.statut == 'Pending' %}status-pending
+                            {% elseif reponse.statut == 'In Progress' %}status-progress
+                            {% elseif reponse.statut == 'Resolved' %}status-resolved
+                            {% else %}status-closed{% endif %}">
+                            {{ reponse.statut }}
+                        </span>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="field-label">Date:</p>
+                            <p class="field-value">{{ reponse.date }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="field-label">Réclamation associée:</p>
+                            <p class="field-value">
+                                {% if reponse.reclamation_id %}
+                                    #{{ reponse.reclamation_id }} - {{ reponse.reclamation_description|length > 50 ? reponse.reclamation_description|slice(0, 50) ~ '...' : reponse.reclamation_description }}
+                                {% else %}
+                                    Aucune réclamation associée
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <p class="field-label">Description:</p>
+                            <div class="field-value p-3 bg-white rounded">
+                                {{ reponse.description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="{{ path('app_front_reponse_index') }}" class="btn btn-secondary action-btn">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

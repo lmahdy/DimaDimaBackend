@@ -14,6 +14,7 @@
                     <a href="{{ path('service') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'service' %}active{% endif %}">Service</a>
                     <a href="{{ path('team') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'team' %}active{% endif %}">Team</a>
                     <a href="{{ path('app_front_reclamation_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'app_front_reclamation' %}active{% endif %}">Réclamations</a>
+                    <a href="{{ path('app_front_reponse_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'app_front_reponse' %}active{% endif %}">Réponses</a>
                     <a href="{{ path('contact') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'contact' %}active{% endif %}">Contact</a>
                 </div>
 

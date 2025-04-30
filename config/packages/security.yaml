@@ -30,9 +30,7 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/welcome, roles: [ROLE_USER] }
-        - { path: ^/reponse/new, roles: [ROLE_ADMIN] }
-        - { path: ^/reponse/[0-9]+/edit, roles: [ROLE_ADMIN] }
-        - { path: ^/reponse/[0-9]+/delete, roles: [ROLE_ADMIN] }
-        - { path: ^/reponse, roles: [ROLE_USER] }
+        # Allow full CRUD operations for /reponse/
+        - { path: ^/reponse, roles: PUBLIC_ACCESS }
 
 

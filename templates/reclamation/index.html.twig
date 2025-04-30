@@ -67,12 +67,7 @@
         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
           <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 d-flex justify-content-between align-items-center">
             <h6 class="text-white text-capitalize ps-3">Reclamations</h6>
-            {% if not is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_reclamation_new') }}" class="btn btn-sm btn-light me-3">
-              <i class="material-symbols-rounded me-1">add</i>
-              Nouvelle Reclamation
-            </a>
-            {% endif %}
+            <!-- New button removed - only allowing Read, Update, Delete -->
           </div>
         </div>
         <div class="card-body px-0 pb-2">
