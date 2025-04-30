@@ -1,0 +1,105 @@
+{% extends 'base_FrontOffice.html.twig' %}
+
+{% block title %}Nouvelle Réclamation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            border-radius: 5px;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+        }
+
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2>Nouvelle Réclamation</h2>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        {{ form_errors(form) }}
+
+                        <div class="form-group">
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control' ~ (form.description.vars.valid ? '' : ' is-invalid'), 'required': false}}) }}
+                            {% if not form.description.vars.valid %}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.description) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.statut) }}
+                            {{ form_widget(form.statut, {'attr': {'class': 'form-control' ~ (form.statut.vars.valid ? '' : ' is-invalid'), 'required': false}}) }}
+                            {% if not form.statut.vars.valid %}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.statut) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.date) }}
+                            {{ form_widget(form.date, {'attr': {'class': 'form-control' ~ (form.date.vars.valid ? '' : ' is-invalid'), 'required': false}}) }}
+                            {% if not form.date.vars.valid %}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.date) }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Utilisateur field removed #}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-submit">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('app_front_reclamation_index') }}" class="btn btn-cancel ml-2">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

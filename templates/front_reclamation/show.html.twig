@@ -1,0 +1,120 @@
+{% extends 'base_FrontOffice.html.twig' %}
+
+{% block title %}Détails de la Réclamation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .reclamation-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .reclamation-header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .status-new {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-progress {
+            background-color: #ffc107;
+            color: #343a40;
+        }
+
+        .status-waiting {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-closed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .field-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .field-value {
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            margin-right: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="reclamation-details">
+                    <div class="reclamation-header d-flex justify-content-between align-items-center">
+                        <h2>Réclamation #{{ reclamation.id }}</h2>
+                        <span class="status-badge
+                            {% if reclamation.statut == 'New' %}status-new
+                            {% elseif reclamation.statut == 'In Progress' %}status-progress
+                            {% elseif reclamation.statut == 'Waiting for Response' %}status-waiting
+                            {% else %}status-closed{% endif %}">
+                            {{ reclamation.statut }}
+                        </span>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <p class="field-label">Date:</p>
+                            <p class="field-value">{{ reclamation.date }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <p class="field-label">Description:</p>
+                            <div class="field-value p-3 bg-white rounded">
+                                {{ reclamation.description }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{{ path('app_front_reclamation_index') }}" class="btn btn-secondary action-btn">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        <a href="{{ path('app_front_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-warning action-btn">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('app_front_reclamation_delete', {'id': reclamation.id}) }}" style="display: inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                            <button class="btn btn-danger action-btn">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

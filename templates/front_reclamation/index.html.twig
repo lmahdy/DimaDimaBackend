@@ -1,0 +1,147 @@
+{% extends 'base_FrontOffice.html.twig' %}
+
+{% block title %}Réclamations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .reclamation-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .reclamation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .status-new {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-progress {
+            background-color: #ffc107;
+            color: #343a40;
+        }
+
+        .status-waiting {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-closed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .action-btn {
+            margin-right: 5px;
+        }
+
+        .page-title {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #343a40;
+            padding-bottom: 10px;
+        }
+
+        .btn-add {
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1 class="page-title">Réclamations</h1>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="{{ path('app_front_reclamation_new') }}" class="btn btn-primary btn-add">
+                    <i class="fas fa-plus-circle"></i> Nouvelle Réclamation
+                </a>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une réclamation...">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if reclamations|length > 0 %}
+            <div class="row" id="reclamationsContainer">
+                {% for reclamation in reclamations %}
+                    <div class="col-md-6 reclamation-item">
+                        <div class="card reclamation-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Réclamation #{{ reclamation.id }}</h5>
+                                <span class="status-badge
+                                    {% if reclamation.statut == 'New' %}status-new
+                                    {% elseif reclamation.statut == 'In Progress' %}status-progress
+                                    {% elseif reclamation.statut == 'Waiting for Response' %}status-waiting
+                                    {% else %}status-closed{% endif %}">
+                                    {{ reclamation.statut }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ reclamation.description|length > 100 ? reclamation.description|slice(0, 100) ~ '...' : reclamation.description }}</p>
+                                <p class="card-text"><small class="text-muted">Date: {{ reclamation.date }}</small></p>
+                                <div class="mt-3">
+                                    <a href="{{ path('app_front_reclamation_show', {'id': reclamation.id}) }}" class="btn btn-sm btn-info action-btn">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <a href="{{ path('app_front_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-sm btn-warning action-btn">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                    <form method="post" action="{{ path('app_front_reclamation_delete', {'id': reclamation.id}) }}" style="display: inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                        <button class="btn btn-sm btn-danger action-btn">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Aucune réclamation trouvée.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $("#searchInput").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $(".reclamation-item").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!-- Nav Bar Start -->
+<div class="nav-bar" id="mainNav">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+            <a href="#" class="navbar-brand">MENU</a>
+            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+                <div class="navbar-nav mr-auto">
+                    <a href="{{ path('home') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}">Home</a>
+                    <a href="{{ path('about') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'about' %}active{% endif %}">About</a>
+                    <a href="{{ path('service') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'service' %}active{% endif %}">Service</a>
+                    <a href="{{ path('team') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'team' %}active{% endif %}">Team</a>
+                    <a href="{{ path('app_front_reclamation_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'app_front_reclamation' %}active{% endif %}">Réclamations</a>
+                    <a href="{{ path('contact') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'contact' %}active{% endif %}">Contact</a>
+                </div>
+
+                <div class="ml-auto">
+                    <a href="{{ path('app_login') }}" class="nav-item nav-link">Login</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+<!-- Nav Bar End -->
