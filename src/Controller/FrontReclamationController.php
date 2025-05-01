@@ -370,4 +370,50 @@ class FrontReclamationController extends AbstractController
 
         return $this->redirectToRoute('front_reclamation_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/{id}/pdf', name: 'front_reclamation_pdf', methods: ['GET'])]
+    public function exportPdf(EntityManagerInterface $entityManager, int $id): Response
+    {
+        // Get the reclamation data
+        $conn = $entityManager->getConnection();
+        $sql = 'SELECT * FROM reclamation WHERE id = :id';
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery(['id' => $id]);
+        $reclamation = $resultSet->fetchAssociative();
+
+        if (!$reclamation) {
+            throw $this->createNotFoundException('Réclamation non trouvée');
+        }
+
+        // Get responses for this reclamation
+        $sql = 'SELECT * FROM reponse WHERE id_Reclamation = :id ORDER BY date DESC';
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery(['id' => $id]);
+        $reponses = $resultSet->fetchAllAssociative();
+
+        // Render the PDF template
+        $html = $this->renderView('front_reclamation/pdf.html.twig', [
+            'reclamation' => $reclamation,
+            'reponses' => $reponses,
+        ]);
+
+        // Configure Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Generate the PDF file name
+        $filename = sprintf('reclamation-%d.pdf', $id);
+
+        // Return the PDF as a response
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
+    }
 }

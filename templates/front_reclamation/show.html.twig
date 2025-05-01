@@ -48,6 +48,9 @@
                             <a href="{{ path('front_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-primary">
                                 <i class="fa fa-edit"></i> Modifier
                             </a>
+                            <a href="{{ path('front_reclamation_pdf', {'id': reclamation.id}) }}" class="btn btn-info">
+                                <i class="fa fa-file-pdf"></i> Exporter en PDF
+                            </a>
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
                                 <i class="fa fa-trash"></i> Supprimer
                             </button>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Réclamation #{{ reclamation.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .reclamation-info {
+            margin-bottom: 20px;
+        }
+        .reclamation-info p {
+            margin: 5px 0;
+        }
+        .responses {
+            margin-top: 30px;
+        }
+        .response {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-new { background-color: #007bff; color: white; }
+        .status-in-progress { background-color: #ffc107; color: black; }
+        .status-waiting { background-color: #17a2b8; color: white; }
+        .status-closed { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Réclamation #{{ reclamation.id }}</h1>
+    </div>
+
+    <div class="reclamation-info">
+        <h2>Informations de la Réclamation</h2>
+        <p><strong>Description:</strong> {{ reclamation.description }}</p>
+        <p><strong>Statut:</strong> 
+            <span class="status-badge status-{{ reclamation.statut|lower|replace({' ': '-'}) }}">
+                {{ reclamation.statut }}
+            </span>
+        </p>
+        <p><strong>Date:</strong> {{ reclamation.date|date('d/m/Y') }}</p>
+    </div>
+
+    {% if reponses|length > 0 %}
+        <div class="responses">
+            <h2>Réponses ({{ reponses|length }})</h2>
+            {% for reponse in reponses %}
+                <div class="response">
+                    <p><strong>Réponse #{{ reponse.id }}</strong></p>
+                    <p>{{ reponse.description }}</p>
+                    <p><small>Date: {{ reponse.date|date('d/m/Y') }}</small></p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="responses">
+            <p>Aucune réponse n'a été fournie pour cette réclamation.</p>
+        </div>
+    {% endif %}
+</body>
+</html> 
