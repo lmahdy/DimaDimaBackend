@@ -9,12 +9,6 @@
 
             <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                 <div class="navbar-nav mr-auto">
-                    <a href="{{ path('home') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}">Home</a>
-                    <a href="{{ path('about') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'about' %}active{% endif %}">About</a>
-                    <a href="{{ path('service') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'service' %}active{% endif %}">Service</a>
-                    <a href="{{ path('team') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'team' %}active{% endif %}">Team</a>
-                    <a href="{{ path('portfolio') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'portfolio' %}active{% endif %}">Project</a>
-                    <a href="{{ path('contact') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'contact' %}active{% endif %}">Contact</a>
                     <a href="{{ path('front_reclamation_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'front_reclamation_' %}active{% endif %}">Réclamations</a>
                     <a href="{{ path('front_reponse_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'front_reponse_' %}active{% endif %}">Réponses</a>
                 </div>
