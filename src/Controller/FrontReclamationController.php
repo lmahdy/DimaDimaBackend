@@ -14,12 +14,13 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Form\FormError;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/front/reclamation')]
 class FrontReclamationController extends AbstractController
 {
     #[Route('/', name: 'front_reclamation_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, Request $request, PaginatorInterface $paginator): Response
     {
         // Use a custom query to fetch all reclamations
         $conn = $entityManager->getConnection();
@@ -28,8 +29,15 @@ class FrontReclamationController extends AbstractController
         $resultSet = $stmt->executeQuery();
         $reclamations = $resultSet->fetchAllAssociative();
 
+        // Paginate the results
+        $pagination = $paginator->paginate(
+            $reclamations,
+            $request->query->getInt('page', 1), // Get page number from request, default to 1
+            6 // Items per page
+        );
+
         return $this->render('front_reclamation/index.html.twig', [
-            'reclamations' => $reclamations,
+            'pagination' => $pagination,
         ]);
     }
 
