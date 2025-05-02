@@ -89,7 +89,7 @@ final class ContratController extends AbstractController
                     $hash2 = $hasher->hash($file2);
                     $distance = $hasher->distance($hash1, $hash2);
                     
-                    if ($distance <= 5) {
+                    if ($distance <= 7) {
                         $entityManager->persist($contrat);
                         $entityManager->flush();
                         $this->addFlash('success', 'Contract created successfully!');
@@ -105,6 +105,9 @@ final class ContratController extends AbstractController
                     // First-time signature setup
                     $user->setSignature('/signatures/' . $filename);
                     $entityManager->persist($user);
+                    $entityManager->persist($contrat);
+
+
                     $entityManager->flush();
                     $this->addFlash('success', 'Signature saved successfully!');
                     return $this->redirectToRoute('app_contrat_index');
