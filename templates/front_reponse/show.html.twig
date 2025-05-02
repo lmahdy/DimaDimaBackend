@@ -1,35 +1,170 @@
-{# templates/front_reponse/show.html.twig #}
-{% extends 'base.html.twig' %}
+{% extends 'base_frontOffice.html.twig' %}
 
-{% block title %}Response #{{ response.id }}{% endblock %}
+{% block title %}Détails de la Réponse #{{ reponse.id }}{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .dropdown-menu-right {
+        right: 0;
+        left: auto;
+    }
+
+    .lang-flag {
+        width: 20px;
+        height: 15px;
+        margin-right: 8px;
+    }
+
+    .translation-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 4px;
+    }
+
+    .translation-box.ar {
+        text-align: right;
+        direction: rtl;
+        border-left: none;
+        border-right: 4px solid #007bff;
+    }
+
+    .translation-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 0.2em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border .75s linear infinite;
+    }
+
+    @keyframes spinner-border {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Détails de la Réponse #{{ reponse.id }}{% endblock %}
 
 {% block body %}
-    <h1>Response #{{ response.id }}</h1>
+    <div class="section-title">
+        <h2>Réponse #{{ reponse.id }}</h2>
+    </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ response.id }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ response.description }}</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>{{ response.statut }}</td>
-            </tr>
-            <tr>
-                <th>Date</th>
-                <td>{{ response.date }}</td>
-            </tr>
-            <tr>
-                <th>Reclamation ID</th>
-                <td>N/A</td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="translationLoading" class="alert alert-info" style="display: none;">
+        <span class="loading-spinner"></span> Traduction en cours, veuillez patienter...
+    </div>
 
-    <a href="{{ path('front_reponses_index') }}">Back to list</a>
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Informations</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="translationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-language"></i> Traduire la description
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="translationDropdown">
+                            <a class="dropdown-item translation-link {% if targetLang == 'original' %}active{% endif %}" href="{{ path('front_reponse_translate', {'id': reponse.id, 'lang': 'original'}) }}">
+                                <img src="{{ asset('img/flags/fr.png') }}" alt="French" class="lang-flag"> Original (Français)
+                            </a>
+                            <a class="dropdown-item translation-link {% if targetLang == 'en' %}active{% endif %}" href="{{ path('front_reponse_translate', {'id': reponse.id, 'lang': 'en'}) }}">
+                                <img src="{{ asset('img/flags/en.png') }}" alt="English" class="lang-flag"> Anglais
+                            </a>
+                            <a class="dropdown-item translation-link {% if targetLang == 'ar' %}active{% endif %}" href="{{ path('front_reponse_translate', {'id': reponse.id, 'lang': 'ar'}) }}">
+                                <img src="{{ asset('img/flags/ar.png') }}" alt="Arabic" class="lang-flag"> Arabe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold">Contenu:</h6>
+                        <p>{{ originalDescription }}</p>
+
+                        {% if translatedDescription is not null %}
+                            <div class="translation-box {% if targetLang == 'ar' %}ar{% endif %}">
+                                <div class="translation-title">
+                                    {% if targetLang == 'en' %}
+                                        <img src="{{ asset('img/flags/en.png') }}" alt="English" class="lang-flag"> Traduction en anglais
+                                    {% elseif targetLang == 'ar' %}
+                                        <img src="{{ asset('img/flags/ar.png') }}" alt="Arabic" class="lang-flag"> Traduction en arabe
+                                    {% endif %}
+                                </div>
+                                <p>{{ translatedDescription|nl2br }}</p>
+
+                                {% if translationError is not null %}
+                                    <div class="alert alert-warning mt-3 mb-0">
+                                        <i class="fa fa-exclamation-triangle"></i> {{ translationError }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% elseif translationError is not null %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fa fa-exclamation-triangle"></i> {{ translationError }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="font-weight-bold">Date:</h6>
+                        <p>{{ reponse.date|date('d/m/Y') }}</p>
+                    </div>
+
+                    {% if reponse.reclamation_id %}
+                        <div class="alert alert-info">
+                            <h6 class="font-weight-bold">Réclamation associée:</h6>
+                            <p>{{ reponse.reclamation_description }}</p>
+                            <a href="{{ path('front_reclamation_show', {'id': reponse.reclamation_id}) }}" class="btn btn-sm btn-info mt-2">
+                                <i class="fa fa-link"></i> Voir la réclamation complète
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('front_reponse_index') }}" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left"></i> Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all translation links
+        const translationLinks = document.querySelectorAll('.translation-link');
+        const loadingIndicator = document.getElementById('translationLoading');
+
+        // Add click event listener to each link
+        translationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Don't show loading for the original language
+                if (!this.href.includes('lang=original')) {
+                    e.preventDefault();
+                    loadingIndicator.style.display = 'block';
+
+                    // Scroll to the loading indicator
+                    loadingIndicator.scrollIntoView({ behavior: 'smooth' });
+
+                    // Navigate to the link after a short delay
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 100);
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

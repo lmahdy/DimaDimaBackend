@@ -1,39 +1,94 @@
-{# templates/front_reponse/index.html.twig #}
-{% extends 'base.html.twig' %}
+{% extends 'base_frontOffice.html.twig' %}
 
-{% block title %}Responses{% endblock %}
+{% block title %}Liste des Réponses{% endblock %}
+
+{% block header_title %}Liste des Réponses{% endblock %}
 
 {% block body %}
-    <h1>Responses</h1>
+    <div class="section-title">
+        <h2>Toutes les Réponses</h2>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Reclamation ID</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for response in responses %}
-            <tr>
-                <td>{{ response.id }}</td>
-                <td>{{ response.description }}</td>
-                <td>{{ response.statut }}</td>
-                <td>{{ response.date }}</td>
-                <td>N/A</td>
-                <td>
-                    <a href="{{ path('front_reponse_show', {'id': response.id}) }}">Show</a>
-                </td>
-            </tr>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="input-group w-100">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une réponse...">
+                    <div class="input-group-append">
+                        <button class="btn btn-dark" type="button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row" id="reponsesList">
+        {% if reponses is empty %}
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    Aucune réponse trouvée.
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="6">No responses found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            {% for reponse in reponses %}
+                <div class="col-lg-6 mb-4 reponse-item">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Réponse #{{ reponse.id }}</h5>
+                            {% if reponse.reclamation_id %}
+                                <span class="badge badge-info">
+                                    Réclamation #{{ reponse.reclamation_id }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ reponse.description|length > 100 ? reponse.description|slice(0, 100) ~ '...' : reponse.description }}</p>
+                            <p class="text-muted">
+                                <small>Date: {{ reponse.date|date('d/m/Y') }}</small>
+                            </p>
+                            {% if reponse.reclamation_description %}
+                                <div class="alert alert-light">
+                                    <small><strong>Réclamation:</strong> {{ reponse.reclamation_description|length > 50 ? reponse.reclamation_description|slice(0, 50) ~ '...' : reponse.reclamation_description }}</small>
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('front_reponse_show', {'id': reponse.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-eye"></i> Voir détails
+                                </a>
+                                {% if reponse.reclamation_id %}
+                                    <a href="{{ path('front_reclamation_show', {'id': reponse.reclamation_id}) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fa fa-link"></i> Voir la réclamation
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const reponseItems = document.querySelectorAll('.reponse-item');
+
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            reponseItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

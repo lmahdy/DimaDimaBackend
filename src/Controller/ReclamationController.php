@@ -34,9 +34,74 @@ class ReclamationController extends AbstractController
         ]);
     }
 
+    #[Route('/test-search', name: 'app_reclamation_test_search')]
+    public function testSearch(EntityManagerInterface $entityManager): Response
+    {
+        // Simple test endpoint to verify search functionality
+        $conn = $entityManager->getConnection();
+        $sql = 'SELECT * FROM reclamation LIMIT 5';
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery();
+        $reclamations = $resultSet->fetchAllAssociative();
+
+        return $this->json([
+            'reclamations' => $reclamations,
+            'count' => count($reclamations),
+            'success' => true
+        ]);
+    }
+
+    #[Route('/search', name: 'app_reclamation_search', methods: ['GET'])]
+    public function search(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $searchTerm = $request->query->get('q', '');
+
+        // Use a custom query to search reclamations by description
+        $conn = $entityManager->getConnection();
+
+        try {
+            // If search term is empty, return all reclamations
+            if (empty($searchTerm)) {
+                $sql = 'SELECT * FROM reclamation ORDER BY date DESC';
+                $stmt = $conn->prepare($sql);
+                $resultSet = $stmt->executeQuery();
+            } else {
+                // Search by description
+                $searchPattern = '%' . $searchTerm . '%';
+                $sql = 'SELECT * FROM reclamation WHERE description LIKE ? ORDER BY date DESC';
+                $stmt = $conn->prepare($sql);
+                $resultSet = $stmt->executeQuery([$searchPattern]);
+            }
+
+            $reclamations = $resultSet->fetchAllAssociative();
+
+            // Return JSON response for AJAX
+            return $this->json([
+                'reclamations' => $reclamations,
+                'count' => count($reclamations),
+                'searchTerm' => $searchTerm,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            // Return error response
+            return $this->json([
+                'reclamations' => [],
+                'count' => 0,
+                'searchTerm' => $searchTerm,
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // Check if the user is logged in
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
         // Check if the user is an admin
         if ($this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Admins cannot create reclamations');
@@ -200,7 +265,6 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_reclamation_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_USER')]
     public function edit(Request $request, EntityManagerInterface $entityManager, int $id): Response
     {
         // Use a custom query to fetch a single reclamation
@@ -318,15 +382,38 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_reclamation_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_USER')]
     public function delete(Request $request, EntityManagerInterface $entityManager, int $id): Response
     {
         if ($this->isCsrfTokenValid('delete'.$id, $request->getPayload()->getString('_token'))) {
-            // Delete the reclamation using a direct SQL query
-            $conn = $entityManager->getConnection();
-            $sql = 'DELETE FROM reclamation WHERE id = :id';
-            $stmt = $conn->prepare($sql);
-            $stmt->executeStatement(['id' => $id]);
+            try {
+                // Get the database connection
+                $conn = $entityManager->getConnection();
+
+                // Start a transaction
+                $conn->beginTransaction();
+
+                // First, delete any associated responses
+                $sql = 'DELETE FROM reponse WHERE id_Reclamation = :id';
+                $stmt = $conn->prepare($sql);
+                $stmt->executeStatement(['id' => $id]);
+
+                // Then, delete the reclamation
+                $sql = 'DELETE FROM reclamation WHERE id = :id';
+                $stmt = $conn->prepare($sql);
+                $stmt->executeStatement(['id' => $id]);
+
+                // Commit the transaction
+                $conn->commit();
+
+                $this->addFlash('success', 'La réclamation a été supprimée avec succès.');
+            } catch (\Exception $e) {
+                // Rollback the transaction in case of error
+                if ($conn->isTransactionActive()) {
+                    $conn->rollBack();
+                }
+
+                $this->addFlash('error', 'Une erreur est survenue lors de la suppression: ' . $e->getMessage());
+            }
         }
 
         return $this->redirectToRoute('app_reclamation_index', [], Response::HTTP_SEE_OTHER);

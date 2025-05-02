@@ -56,6 +56,11 @@ security:
         - { path: ^/etapeprojet, roles: [ROLE_CLIENT,ROLE_ARTISAN, ROLE_CONSTRUCTEUR, ROLE_ADMIN]  }
 
 
+        # Reponse routes - Allow full CRUD without login
+        - { path: ^/reponse, roles: PUBLIC_ACCESS }
+        # Reclamation routes - Allow Read, Update, Delete without login, but not Create
+        - { path: ^/reclamation/new, roles: [ROLE_USER] }
+        - { path: ^/reclamation, roles: PUBLIC_ACCESS }
 
 
         - {path: ^/contrat/generate-pdf, roles: ROLE_USER }

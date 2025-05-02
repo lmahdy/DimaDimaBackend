@@ -1,0 +1,433 @@
+{% extends 'base_frontOffice.html.twig' %}
+
+{% block title %}Nouvelle Réclamation{% endblock %}
+
+{% block header_title %}Nouvelle Réclamation{% endblock %}
+
+{% block body %}
+    <div class="section-title">
+        <h2>Créer une Nouvelle Réclamation</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Formulaire de Réclamation</h5>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+                    <div class="form-group">
+                        {{ form_label(form.description) }}
+                        <div class="input-group">
+                            {{ form_widget(form.description, {'attr': {'id': 'description-field'}}) }}
+                            <div class="input-group-append">
+                                <button type="button" id="check-grammar-btn" class="btn btn-outline-info">
+                                    <i class="fa fa-check-circle"></i> Vérifier la grammaire
+                                </button>
+                            </div>
+                        </div>
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.description) }}
+                        </div>
+                        <small class="form-text text-muted">Décrivez votre problème en détail.</small>
+
+                        <!-- Grammar check results container -->
+                        <div id="grammar-results" class="mt-3" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                    <span>Suggestions grammaticales</span>
+                                    <button type="button" id="apply-corrections-btn" class="btn btn-sm btn-light">
+                                        <i class="fa fa-magic"></i> Appliquer les corrections
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="grammar-message"></div>
+                                    <div id="grammar-details" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading indicator -->
+                        <div id="grammar-loading" class="mt-2" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm text-info mr-2" role="status">
+                                    <span class="sr-only">Chargement...</span>
+                                </div>
+                                <span>Vérification de la grammaire en cours...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.statut) }}
+                        {{ form_widget(form.statut) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.statut) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.date) }}
+                        {{ form_widget(form.date) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.date) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.Utilisateur_id) }}
+                        {{ form_widget(form.Utilisateur_id) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.Utilisateur_id) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('front_reclamation_index') }}" class="btn btn-secondary">
+                            <i class="fa fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            // Grammar check functionality
+            const checkGrammarBtn = document.getElementById('check-grammar-btn');
+            const applyCorrectionsBtn = document.getElementById('apply-corrections-btn');
+            const descriptionField = document.getElementById('description-field');
+            const grammarResults = document.getElementById('grammar-results');
+            const grammarLoading = document.getElementById('grammar-loading');
+            const grammarMessage = document.getElementById('grammar-message');
+            const grammarDetails = document.getElementById('grammar-details');
+
+            let correctedText = '';
+
+            // Check grammar button click handler
+            if (checkGrammarBtn) {
+                checkGrammarBtn.addEventListener('click', function() {
+                    const text = descriptionField.value.trim();
+
+                    if (!text) {
+                        alert('Veuillez saisir du texte avant de vérifier la grammaire.');
+                        return;
+                    }
+
+                    // Show loading indicator
+                    grammarLoading.style.display = 'block';
+                    grammarResults.style.display = 'none';
+
+                    // Pre-check for common words that need accents
+                    let textToCheck = text;
+
+                    // Special handling for "different" -> "différent" which is a common issue
+                    if (textToCheck.toLowerCase().includes('different')) {
+                        console.log('Found "different" in text, applying direct correction');
+                        textToCheck = textToCheck.replace(/\bdifferent\b/gi, 'différent');
+
+                        // Set corrected text directly for immediate use
+                        correctedText = textToCheck;
+                    }
+
+                    const commonMistakes = {
+                        'different': 'différent',
+                        'probleme': 'problème',
+                        'reclamation': 'réclamation',
+                        'reponse': 'réponse',
+                        'tres': 'très',
+                        'apres': 'après',
+                        'etre': 'être'
+                    };
+
+                    // Check if any common mistakes are in the text
+                    let hasCommonMistakes = false;
+                    Object.keys(commonMistakes).forEach(mistake => {
+                        if (textToCheck.toLowerCase().includes(mistake.toLowerCase())) {
+                            hasCommonMistakes = true;
+                        }
+                    });
+
+                    // Send request to the grammar check API
+                    const formData = new FormData();
+                    formData.append('text', textToCheck);
+
+                    fetch('{{ path('front_reclamation_check_grammar') }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide loading indicator
+                        grammarLoading.style.display = 'none';
+
+                        if (data.success) {
+                            // Store the corrected text
+                            correctedText = data.corrected;
+
+                            // Show results
+                            grammarResults.style.display = 'block';
+
+                            if (data.errors > 0) {
+                                // Check if we're using RapidAPI or fallback mode
+                                const alertClass = data.fallback ? 'alert-warning' : 'alert-info';
+                                let alertTitle = '';
+
+                                if (data.fallback) {
+                                    alertTitle = 'Mode hors ligne activé.';
+                                } else if (data.similarity) {
+                                    alertTitle = `<strong>Correction par RapidAPI (Similarité: ${data.similarity})</strong>`;
+                                } else {
+                                    alertTitle = `<strong>${data.errors} erreur(s) trouvée(s).</strong>`;
+                                }
+
+                                grammarMessage.innerHTML = `<div class="alert ${alertClass}">
+                                    ${alertTitle} Voici la version corrigée:
+                                    <div class="mt-2 p-2 bg-light border rounded">
+                                        <pre style="white-space: pre-wrap;">${data.corrected}</pre>
+                                    </div>
+                                    ${data.message ? `<div class="mt-2 small">${data.message}</div>` : ''}
+                                </div>`;
+
+                                // Show details of errors if available
+                                if (data.details && data.details.length > 0) {
+                                    let detailsHtml = '<div class="mt-3"><h6>Détails des corrections:</h6><ul class="list-group">';
+
+                                    // Process details
+                                    const details = data.details || [];
+                                    details.forEach(error => {
+                                        if (error.better && error.better.length > 0) {
+                                            const original = error.bad || '';
+                                            const suggestion = error.better[0] || '';
+                                            const description = error.description || 'Correction suggérée';
+
+                                            // Determine badge type based on the error ID
+                                            let badgeClass = 'badge-info';
+                                            let badgeText = error.id || 'correction';
+
+                                            if (error.id === 'rapidapi_correction') {
+                                                badgeClass = 'badge-primary';
+                                                badgeText = 'RapidAPI';
+                                            } else if (error.id && error.id.startsWith('fallback_')) {
+                                                badgeClass = 'badge-warning';
+                                                badgeText = 'hors ligne';
+                                            }
+
+                                            // For RapidAPI corrections that might be long, truncate the display
+                                            let displayOriginal = original;
+                                            let displaySuggestion = suggestion;
+
+                                            if (error.id === 'rapidapi_correction' && original.length > 100) {
+                                                displayOriginal = original.substring(0, 100) + '...';
+                                                displaySuggestion = suggestion.substring(0, 100) + '...';
+                                            }
+
+                                            detailsHtml += `<li class="list-group-item">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <span class="text-danger">${displayOriginal}</span> →
+                                                        <span class="text-success">${displaySuggestion}</span>
+                                                        <small class="d-block text-muted">${description}</small>
+                                                    </div>
+                                                    <span class="badge ${badgeClass}">${badgeText}</span>
+                                                </div>
+                                            </li>`;
+                                        }
+                                    });
+
+                                    detailsHtml += '</ul></div>';
+                                    grammarDetails.innerHTML = detailsHtml;
+                                } else {
+                                    grammarDetails.innerHTML = '';
+                                }
+                            } else {
+                                grammarMessage.innerHTML = '<div class="alert alert-success">Aucune erreur grammaticale trouvée!</div>';
+                                grammarDetails.innerHTML = '';
+                            }
+                        } else {
+                            // Show error message
+                            grammarResults.style.display = 'block';
+                            grammarMessage.innerHTML = `<div class="alert alert-danger">${data.message || 'Une erreur est survenue lors de la vérification.'}</div>`;
+                            grammarDetails.innerHTML = '';
+                        }
+                    })
+                    .catch(error => {
+                        // Hide loading indicator and show error
+                        grammarLoading.style.display = 'none';
+                        grammarResults.style.display = 'block';
+
+                        // If we detected common mistakes, try to correct them client-side
+                        if (hasCommonMistakes) {
+                            // Apply client-side corrections
+                            let clientCorrectedText = text;
+                            const details = [];
+
+                            Object.keys(commonMistakes).forEach((mistake, index) => {
+                                const correction = commonMistakes[mistake];
+                                const regex = new RegExp('\\b' + mistake + '\\b', 'gi');
+
+                                if (regex.test(clientCorrectedText)) {
+                                    // Save the original for display
+                                    const original = clientCorrectedText;
+
+                                    // Apply correction
+                                    clientCorrectedText = clientCorrectedText.replace(regex, correction);
+
+                                    // Add to details
+                                    details.push({
+                                        id: `client_${index}`,
+                                        bad: mistake,
+                                        better: [correction],
+                                        description: 'Correction d\'accent (mode hors ligne)'
+                                    });
+                                }
+                            });
+
+                            if (clientCorrectedText !== text) {
+                                // Store the corrected text in the global variable
+                                correctedText = clientCorrectedText;
+
+                                // Show client-side corrections
+                                grammarMessage.innerHTML = `
+                                    <div class="alert alert-warning">
+                                        <p><strong>Mode hors ligne activé:</strong> Le service de vérification grammaticale n'est pas disponible.</p>
+                                        <p>Corrections suggérées:</p>
+                                        <div class="mt-2 p-2 bg-light border rounded">
+                                            <pre style="white-space: pre-wrap;">${clientCorrectedText}</pre>
+                                        </div>
+                                    </div>`;
+
+                                // Show details
+                                let detailsHtml = '<div class="mt-3"><h6>Détails des corrections:</h6><ul class="list-group">';
+                                details.forEach(error => {
+                                    // For client-side corrections
+                                    const badgeClass = 'badge-warning';
+                                    const badgeText = 'client';
+
+                                    detailsHtml += `<li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <span class="text-danger">${error.bad}</span> →
+                                                <span class="text-success">${error.better[0]}</span>
+                                                <small class="d-block text-muted">${error.description}</small>
+                                            </div>
+                                            <span class="badge ${badgeClass}">${badgeText}</span>
+                                        </div>
+                                    </li>`;
+                                });
+                                detailsHtml += '</ul></div>';
+                                grammarDetails.innerHTML = detailsHtml;
+
+                                // No need to store in window object since we already set correctedText
+
+                                // Add retry button
+                                grammarMessage.innerHTML += `
+                                    <div class="mt-2">
+                                        <button type="button" id="retry-grammar-check" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-refresh"></i> Réessayer avec le service en ligne
+                                        </button>
+                                    </div>`;
+
+                                // Add event listener to retry button
+                                document.getElementById('retry-grammar-check').addEventListener('click', function() {
+                                    // Hide results and click the check grammar button again
+                                    grammarResults.style.display = 'none';
+                                    checkGrammarBtn.click();
+                                });
+
+                                return;
+                            }
+                        }
+
+                        // Show error with retry button if no client-side corrections
+                        grammarMessage.innerHTML = `
+                            <div class="alert alert-danger">
+                                <p><strong>Erreur de connexion:</strong> ${error.message}</p>
+                                <p>Le service de vérification grammaticale n'est pas disponible pour le moment.</p>
+                                <button type="button" id="retry-grammar-check" class="btn btn-sm btn-outline-danger mt-2">
+                                    <i class="fa fa-refresh"></i> Réessayer
+                                </button>
+                            </div>`;
+                        grammarDetails.innerHTML = '';
+
+                        // Add event listener to retry button
+                        document.getElementById('retry-grammar-check').addEventListener('click', function() {
+                            // Hide results and click the check grammar button again
+                            grammarResults.style.display = 'none';
+                            checkGrammarBtn.click();
+                        });
+                    });
+                });
+            }
+
+            // Apply corrections button click handler
+            if (applyCorrectionsBtn) {
+                applyCorrectionsBtn.addEventListener('click', function() {
+                    console.log('Apply button clicked, correctedText:', correctedText);
+
+                    if (correctedText) {
+                        // Apply the corrections to the description field
+                        descriptionField.value = correctedText;
+                        grammarResults.style.display = 'none';
+
+                        // Show success message
+                        const successAlert = document.createElement('div');
+                        successAlert.className = 'alert alert-success mt-2';
+                        successAlert.innerHTML = 'Corrections appliquées avec succès!';
+
+                        // Insert after the description field
+                        descriptionField.parentNode.parentNode.appendChild(successAlert);
+
+                        // Remove the alert after 3 seconds
+                        setTimeout(() => {
+                            successAlert.remove();
+                        }, 3000);
+
+                        // Clear the stored corrected text
+                        correctedText = '';
+                    } else {
+                        // If no corrected text is available, show an error
+                        const errorAlert = document.createElement('div');
+                        errorAlert.className = 'alert alert-danger mt-2';
+                        errorAlert.innerHTML = 'Aucune correction disponible à appliquer.';
+
+                        // Insert after the description field
+                        descriptionField.parentNode.parentNode.appendChild(errorAlert);
+
+                        // Remove the alert after 3 seconds
+                        setTimeout(() => {
+                            errorAlert.remove();
+                        }, 3000);
+                    }
+                });
+            }
+        }, false);
+    })();
+</script>
+{% endblock %}

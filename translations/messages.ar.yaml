@@ -1,0 +1,11 @@
+response:
+  title: 'الرد #%id%'
+  content: 'المحتوى'
+  date: 'التاريخ'
+  associated_claim: 'الشكوى المرتبطة'
+  view_full_claim: 'عرض الشكوى كاملة'
+  back_to_list: 'العودة إلى القائمة'
+  translate: 'ترجم'
+  original: 'الأصلي (الفرنسية)'
+  english: 'الإنجليزية'
+  arabic: 'العربية'

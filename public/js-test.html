@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Grammar Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .original, .corrected {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .original {
+            background-color: #ffeeee;
+        }
+        .corrected {
+            background-color: #eeffee;
+        }
+        .changes {
+            margin-top: 15px;
+        }
+        .change-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+        }
+        .old {
+            color: red;
+            text-decoration: line-through;
+        }
+        .new {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>JavaScript Grammar Checker</h1>
+    
+    <div>
+        <p>Enter French text with grammar errors:</p>
+        <textarea id="text-input">Je suis different des autres personnes. Je peut faire beaucoup de choses que les autres ne peut pas faire.</textarea>
+        <div>
+            <button id="check-js">Check with JavaScript</button>
+            <button id="check-api">Check with RapidAPI</button>
+        </div>
+    </div>
+    
+    <div class="result" id="result"></div>
+    
+    <script>
+        // Common French grammar mistakes and their corrections
+        const commonMistakes = {
+            // Words missing accents
+            'different': 'différent',
+            'probleme': 'problème',
+            'tres': 'très',
+            'apres': 'après',
+            'etre': 'être',
+            'meme': 'même',
+            'deja': 'déjà',
+            'telephone': 'téléphone',
+            'numero': 'numéro',
+            'qualite': 'qualité',
+            'securite': 'sécurité',
+            'experience': 'expérience',
+            'desole': 'désolé',
+            'interesse': 'intéressé',
+            
+            // Common verb conjugation errors
+            'je peut': 'je peux',
+            'tu peut': 'tu peux',
+            'je va': 'je vais',
+            'tu va': 'tu vas',
+            'je fait': 'je fais',
+            'tu fait': 'tu fais',
+            'je est': 'je suis',
+            'tu est': 'tu es',
+            
+            // Missing negation
+            'je suis pas': 'je ne suis pas',
+            'tu es pas': 'tu n\'es pas',
+            'il est pas': 'il n\'est pas',
+            'elle est pas': 'elle n\'est pas',
+            'nous sommes pas': 'nous ne sommes pas',
+            'vous etes pas': 'vous n\'êtes pas',
+            'ils sont pas': 'ils ne sont pas',
+            'elles sont pas': 'elles ne sont pas',
+            'je sais pas': 'je ne sais pas',
+            'c\'est pas': 'ce n\'est pas',
+            'il y a pas': 'il n\'y a pas',
+            'y a pas': 'il n\'y a pas'
+        };
+        
+        // Function to check grammar with JavaScript
+        function checkGrammarJS(text) {
+            let correctedText = text;
+            const changes = [];
+            
+            // First check for exact matches (case-insensitive)
+            Object.keys(commonMistakes).forEach(mistake => {
+                const regex = new RegExp('\\b' + mistake + '\\b', 'gi');
+                const matches = correctedText.match(regex);
+                
+                if (matches) {
+                    matches.forEach(match => {
+                        const original = match;
+                        // Preserve case if possible
+                        let replacement = commonMistakes[mistake.toLowerCase()];
+                        if (original === original.toUpperCase()) {
+                            replacement = replacement.toUpperCase();
+                        } else if (original[0] === original[0].toUpperCase()) {
+                            replacement = replacement[0].toUpperCase() + replacement.slice(1);
+                        }
+                        
+                        changes.push({
+                            original: original,
+                            replacement: replacement,
+                            type: 'grammar'
+                        });
+                    });
+                    
+                    correctedText = correctedText.replace(regex, commonMistakes[mistake]);
+                }
+            });
+            
+            // Special handling for "different" -> "différent"
+            if (correctedText.toLowerCase().includes('different')) {
+                const originalText = correctedText;
+                correctedText = correctedText.replace(/\bdifferent\b/gi, 'différent');
+                
+                if (originalText !== correctedText) {
+                    changes.push({
+                        original: 'different',
+                        replacement: 'différent',
+                        type: 'special_handling'
+                    });
+                }
+            }
+            
+            return {
+                original: text,
+                corrected: correctedText,
+                changes: changes
+            };
+        }
+        
+        // Function to display results
+        function displayResults(results) {
+            const resultDiv = document.getElementById('result');
+            
+            let html = `
+                <h2>Results:</h2>
+                <div class="original">
+                    <h3>Original Text:</h3>
+                    <p>${results.original}</p>
+                </div>
+                <div class="corrected">
+                    <h3>Corrected Text:</h3>
+                    <p>${results.corrected}</p>
+                </div>
+            `;
+            
+            if (results.changes && results.changes.length > 0) {
+                html += '<div class="changes"><h3>Changes Made:</h3>';
+                
+                results.changes.forEach(change => {
+                    html += `
+                        <div class="change-item">
+                            <span class="old">${change.original}</span> → 
+                            <span class="new">${change.replacement}</span>
+                            ${change.type ? `<small>(${change.type})</small>` : ''}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            } else {
+                html += '<p>No changes were made.</p>';
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        // Event listener for JavaScript check button
+        document.getElementById('check-js').addEventListener('click', function() {
+            const text = document.getElementById('text-input').value.trim();
+            if (!text) {
+                alert('Please enter some text to check.');
+                return;
+            }
+            
+            const results = checkGrammarJS(text);
+            displayResults(results);
+        });
+        
+        // Event listener for RapidAPI check button
+        document.getElementById('check-api').addEventListener('click', function() {
+            const text = document.getElementById('text-input').value.trim();
+            if (!text) {
+                alert('Please enter some text to check.');
+                return;
+            }
+            
+            // Show loading state
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Loading...</p>';
+            
+            // Make API request
+            fetch(`https://ai-grammar-checker-i-gpt.p.rapidapi.com/api/v1/correctAndRephrase?text=${encodeURIComponent(text)}`, {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': '785640fb0emsh4c5ac04753793dp1c7232jsnf8323dfb6bbd',
+                    'X-RapidAPI-Host': 'ai-grammar-checker-i-gpt.p.rapidapi.com'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.correctedText) {
+                    // Create a results object similar to the JS checker
+                    const results = {
+                        original: text,
+                        corrected: data.correctedText,
+                        changes: [],
+                        apiResponse: data
+                    };
+                    
+                    // Try to identify changes
+                    if (data.correctedText !== text) {
+                        results.changes.push({
+                            original: text,
+                            replacement: data.correctedText,
+                            type: 'api_correction'
+                        });
+                    }
+                    
+                    displayResults(results);
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>API Error:</h2>
+                        <p>The API did not return a corrected text.</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `
+                    <h2>Error:</h2>
+                    <p>${error.message}</p>
+                `;
+            });
+        });
+        
+        // Initialize with JavaScript check
+        window.onload = function() {
+            document.getElementById('check-js').click();
+        };
+    </script>
+</body>
+</html>

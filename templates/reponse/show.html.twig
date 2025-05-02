@@ -7,7 +7,7 @@
   <style>
     .card {
       border-radius: 12px;
-      box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 
+      box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14),
                   0 7px 10px -5px rgba(0, 0, 0, 0.4);
     }
     .field-container {
@@ -49,12 +49,12 @@
                 </div>
                 <h4 class="mb-0">Réponse #{{ reponse.id }}</h4>
               </div>
-              
+
               <div class="field-container">
                 <div class="field-label">Description</div>
                 <div class="field-value">{{ reponse.description }}</div>
               </div>
-              
+
               <div class="field-container">
                 <div class="field-label">Statut</div>
                 <div class="field-value">
@@ -63,12 +63,12 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="field-container">
                 <div class="field-label">Date</div>
                 <div class="field-value">{{ reponse.date ? reponse.date|date('Y-m-d') : '' }}</div>
               </div>
-              
+
               <div class="field-container">
                 <div class="field-label">Réclamation associée</div>
                 <div class="field-value">
@@ -83,7 +83,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="row mt-4">
             <div class="col-12">
               <div class="d-flex justify-content-between">
@@ -91,7 +91,6 @@
                   <i class="material-symbols-rounded me-1">arrow_back</i>
                   Retour à la liste
                 </a>
-                {% if is_granted('ROLE_ADMIN') %}
                 <div>
                   <a href="{{ path('app_reponse_edit', {'id': reponse.id}) }}" class="btn btn-outline-info">
                     <i class="material-symbols-rounded me-1">edit</i>
@@ -99,7 +98,6 @@
                   </a>
                   {{ include('reponse/_delete_form.html.twig') }}
                 </div>
-                {% endif %}
               </div>
             </div>
           </div>

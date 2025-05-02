@@ -7,7 +7,7 @@
   <style>
     .card {
       border-radius: 12px;
-      box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 
+      box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14),
                   0 7px 10px -5px rgba(0, 0, 0, 0.4);
     }
     .avatar-sm {
@@ -34,12 +34,10 @@
         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
           <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 d-flex justify-content-between align-items-center">
             <h6 class="text-white text-capitalize ps-3">Reponses</h6>
-            {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_reponse_new') }}" class="btn btn-sm btn-light me-3">
               <i class="material-symbols-rounded me-1">add</i>
               Nouvelle Réponse
             </a>
-            {% endif %}
           </div>
         </div>
         <div class="card-body px-0 pb-2">
@@ -93,7 +91,6 @@
                     <a href="{{ path('app_reponse_show', {'id': reponse.id}) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" title="Voir">
                       <i class="material-symbols-rounded">visibility</i>
                     </a>
-                    {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('app_reponse_edit', {'id': reponse.id}) }}" class="text-secondary font-weight-bold text-xs ms-2" data-toggle="tooltip" title="Modifier">
                       <i class="material-symbols-rounded">edit</i>
                     </a>
@@ -103,7 +100,6 @@
                         <i class="material-symbols-rounded">delete</i>
                       </button>
                     </form>
-                    {% endif %}
                   </td>
                 </tr>
                 {% else %}
@@ -128,10 +124,17 @@
         <i class="material-symbols-rounded me-1">report_problem</i>
         Retour aux Réclamations
       </a>
+      {% if app.user %}
       <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary ms-2">
         <i class="material-symbols-rounded me-1">logout</i>
         Déconnexion
       </a>
+      {% else %}
+      <a href="{{ path('app_login') }}" class="btn btn-outline-primary ms-2">
+        <i class="material-symbols-rounded me-1">login</i>
+        Connexion
+      </a>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

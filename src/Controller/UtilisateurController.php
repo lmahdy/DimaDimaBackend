@@ -12,6 +12,7 @@ use App\Entity\Constructeur;
 use App\Form\UtilisateurCreateType;
 use App\Form\UtilisateurType;
 
+use App\Form\userType;
 
 use App\Repository\UtilisateurRepository;
 use App\Repository\ArtisanRepository;
@@ -305,4 +306,33 @@ public function delete(Request $request, Utilisateur $utilisateur , EntityManage
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route('/utilisateur/profile', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    public function prifile( Request $request, EntityManagerInterface $entityManager,){
+
+
+        $user = $this->getUser();
+        $form = $this->createForm(userType::class, $user);
+        $form->handleRequest($request);
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+             return $this->render('dash/dashboard.html.twig', [
+                'user' => $this->getUser()
+            ]);
+        }
+
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+
+
+    }
+
+
+
+
 }

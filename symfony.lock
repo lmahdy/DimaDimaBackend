@@ -36,6 +36,7 @@
         ]
     },
 
+
     "knplabs/knp-paginator-bundle": {
         "version": "v6.8.0"
     },
@@ -70,6 +71,7 @@
             "./config/packages/knpu_oauth2_client.yaml"
         ]
     },
+
 
     "lexik/jwt-authentication-bundle": {
         "version": "2.18",

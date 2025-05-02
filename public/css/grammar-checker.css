@@ -1,0 +1,66 @@
+/* Grammar Checker Styles */
+
+.grammar-mistake {
+    background-color: #ffdddd;
+    text-decoration: wavy underline #ff6666;
+    padding: 0 2px;
+    cursor: pointer;
+    position: relative;
+}
+
+.grammar-mistake:hover {
+    background-color: #ffcccc;
+}
+
+.grammar-mistake:hover::after {
+    content: attr(data-replacement);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.grammar-correction-ui {
+    margin-top: 20px;
+}
+
+.grammar-highlighted-text {
+    line-height: 1.8;
+}
+
+.grammar-check-btn {
+    margin-top: 10px;
+}
+
+.grammar-results {
+    display: none;
+    margin-top: 20px;
+}
+
+.grammar-loading {
+    display: none;
+    margin-top: 10px;
+}
+
+.grammar-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: grammar-spinner 0.8s linear infinite;
+}
+
+@keyframes grammar-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -1,0 +1,11 @@
+response:
+  title: 'Response #%id%'
+  content: 'Content'
+  date: 'Date'
+  associated_claim: 'Associated Claim'
+  view_full_claim: 'View full claim'
+  back_to_list: 'Back to list'
+  translate: 'Translate'
+  original: 'Original (French)'
+  english: 'English'
+  arabic: 'Arabic'

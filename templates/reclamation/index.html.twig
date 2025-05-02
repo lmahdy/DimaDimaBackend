@@ -24,17 +24,62 @@
       max-width: 200px;
       display: inline-block;
     }
+    /* Search box styling */
+    .input-group-outline:focus-within {
+      box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+    }
+    /* Highlight animation */
+    .bg-warning {
+      animation: highlight-pulse 1.5s infinite;
+    }
+    @keyframes highlight-pulse {
+      0% { background-color: #ffc107; }
+      50% { background-color: #ffdb6d; }
+      100% { background-color: #ffc107; }
+    }
+    /* Search results transition */
+    #reclamationsTable tbody tr {
+      transition: background-color 0.3s ease;
+    }
+    #reclamationsTable tbody tr:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+    /* Clear button styling */
+    #clearSearch {
+      transition: all 0.2s ease;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #clearSearch:hover {
+      background-color: #e3e3e3;
+    }
   </style>
 {% endblock %}
 
 {% block body %}
+  {# Display flash messages #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <div class="row">
     <div class="col-12">
       <div class="card my-4">
         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
           <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3 d-flex justify-content-between align-items-center">
             <h6 class="text-white text-capitalize ps-3">Reclamations</h6>
-            {% if not is_granted('ROLE_ADMIN') %}
+            {% if app.user and not is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_reclamation_new') }}" class="btn btn-sm btn-light me-3">
               <i class="material-symbols-rounded me-1">add</i>
               Nouvelle Reclamation
@@ -43,8 +88,31 @@
           </div>
         </div>
         <div class="card-body px-0 pb-2">
+          <div class="px-4 mb-3">
+            <div class="d-flex align-items-center">
+              <div class="input-group input-group-outline flex-grow-1">
+                <label class="form-label">Rechercher par description...</label>
+                <input type="text" class="form-control" id="searchReclamation" autocomplete="off">
+              </div>
+              <button class="btn btn-sm btn-outline-secondary ms-2" id="clearSearch" style="display: none;">
+                <i class="material-symbols-rounded">close</i>
+              </button>
+              <button class="btn btn-sm btn-outline-primary ms-2" id="testSearch">
+                Test
+              </button>
+            </div>
+            <div id="searchLoader" class="text-center mt-2" style="display: none;">
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="text-xs ms-2">Recherche en cours...</span>
+            </div>
+            <div id="searchResults" class="text-center mt-2" style="display: none;">
+              <span class="text-xs text-secondary">Résultats: <span id="resultCount">0</span></span>
+            </div>
+          </div>
           <div class="table-responsive p-0">
-            <table class="table align-items-center justify-content-center mb-0">
+            <table class="table align-items-center justify-content-center mb-0" id="reclamationsTable">
               <thead>
                 <tr>
                   <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Description</th>
@@ -110,10 +178,17 @@
         <i class="material-symbols-rounded me-1">question_answer</i>
         Voir les Réponses
       </a>
+      {% if app.user %}
       <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary ms-2">
         <i class="material-symbols-rounded me-1">logout</i>
         Déconnexion
       </a>
+      {% else %}
+      <a href="{{ path('app_login') }}" class="btn btn-outline-primary ms-2">
+        <i class="material-symbols-rounded me-1">login</i>
+        Connexion
+      </a>
+      {% endif %}
     </div>
   </div>
 {% endblock %}
@@ -121,9 +196,227 @@
 {% block javascripts %}
   {{ parent() }}
   <script>
-    // Initialize tooltips
+    // Initialize tooltips and search functionality
     $(function () {
       $('[data-toggle="tooltip"]').tooltip();
+
+      // Debounce function to limit how often a function can be called
+      function debounce(func, wait) {
+        let timeout;
+        return function() {
+          const context = this;
+          const args = arguments;
+          clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            func.apply(context, args);
+          }, wait);
+        };
+      }
+
+      // Function to update the table with search results
+      function updateReclamationsTable(reclamations) {
+        const tableBody = $('#reclamationsTable tbody');
+        tableBody.empty();
+
+        if (reclamations.length === 0) {
+          tableBody.append(`
+            <tr>
+              <td colspan="4" class="text-center py-4">
+                <i class="material-symbols-rounded opacity-50">report_problem</i>
+                <p class="text-sm text-secondary mt-2">Aucune réclamation trouvée</p>
+              </td>
+            </tr>
+          `);
+        } else {
+          reclamations.forEach(function(reclamation) {
+            let statusClass = 'info';
+            if (reclamation.statut === 'In Progress') {
+              statusClass = 'warning';
+            } else if (reclamation.statut === 'Waiting for Response') {
+              statusClass = 'primary';
+            } else if (reclamation.statut !== 'New') {
+              statusClass = 'success';
+            }
+
+            tableBody.append(`
+              <tr data-id="${reclamation.id}">
+                <td>
+                  <div class="d-flex px-2">
+                    <div>
+                      <div class="avatar avatar-sm rounded-circle bg-gradient-dark me-2">
+                        <i class="material-symbols-rounded text-white">report_problem</i>
+                      </div>
+                    </div>
+                    <div class="my-auto">
+                      <h6 class="mb-0 text-sm description-text">${reclamation.description}</h6>
+                      <p class="text-xs text-secondary mb-0">
+                        ${reclamation.date}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center align-middle">
+                  <span class="badge bg-gradient-${statusClass}">
+                    ${reclamation.statut}
+                  </span>
+                </td>
+                <td class="text-center align-middle">
+                  <p class="text-sm font-weight-bold mb-0">${reclamation.date}</p>
+                </td>
+                <td class="text-center align-middle">
+                  <a href="{{ path('app_reclamation_show', {'id': 'RECLAMATION_ID'}) }}".replace('RECLAMATION_ID', reclamation.id) class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" title="Voir">
+                    <i class="material-symbols-rounded">visibility</i>
+                  </a>
+                  <a href="{{ path('app_reclamation_edit', {'id': 'RECLAMATION_ID'}) }}".replace('RECLAMATION_ID', reclamation.id) class="text-secondary font-weight-bold text-xs ms-2" data-toggle="tooltip" title="Modifier">
+                    <i class="material-symbols-rounded">edit</i>
+                  </a>
+                </td>
+              </tr>
+            `);
+          });
+        }
+
+        // Reinitialize tooltips for the new elements
+        $('[data-toggle="tooltip"]').tooltip();
+      }
+
+      // Function to highlight search terms in the results
+      function highlightSearchTerms(searchTerm) {
+        if (!searchTerm || searchTerm.length < 2) return;
+
+        // Create a regular expression to find the search term (case insensitive)
+        const regex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+
+        // Find all description elements and highlight the search term
+        $('.description-text').each(function() {
+          const originalText = $(this).text();
+          const highlightedText = originalText.replace(regex, '<span class="bg-warning text-dark">$1</span>');
+          $(this).html(highlightedText);
+        });
+      }
+
+      // Helper function to escape special characters in search term for regex
+      function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      // Function to perform the search
+      function performSearch(searchTerm) {
+        console.log('Performing search with term:', searchTerm);
+
+        // Always show loading indicator
+        $('#searchLoader').show();
+        $('#searchResults').hide();
+
+        $.ajax({
+          url: '{{ path('app_reclamation_search') }}',
+          type: 'GET',
+          data: { q: searchTerm },
+          dataType: 'json',
+          success: function(data) {
+            console.log('Search response:', data);
+
+            // Check if the search was successful
+            if (data.success) {
+              // Update the table with search results
+              updateReclamationsTable(data.reclamations);
+
+              // Update result count and show results info
+              $('#resultCount').text(data.count);
+              $('#searchResults').show();
+
+              // Highlight search terms in results if search term exists
+              if (searchTerm.length > 0) {
+                highlightSearchTerms(searchTerm);
+              }
+            } else {
+              // Show error message
+              console.error('Search failed:', data.error);
+              $('#searchResults').html('<span class="text-danger">Erreur: ' + data.error + '</span>').show();
+            }
+
+            // Hide loading indicator
+            $('#searchLoader').hide();
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX error during search:', error);
+            console.error('Status:', status);
+            console.error('Response:', xhr.responseText);
+
+            // Hide loading indicator
+            $('#searchLoader').hide();
+
+            // Show error message
+            $('#searchResults').html('<span class="text-danger">Erreur lors de la recherche: ' + error + '</span>').show();
+          }
+        });
+      }
+
+      // Clear search button functionality
+      $('#clearSearch').on('click', function() {
+        $('#searchReclamation').val('').focus();
+        $('#clearSearch').hide();
+        // Load all reclamations
+        performSearch('');
+      });
+
+      // Test search button functionality
+      $('#testSearch').on('click', function() {
+        console.log('Testing search endpoint...');
+
+        // Show loading indicator
+        $('#searchLoader').show();
+        $('#searchResults').hide();
+
+        $.ajax({
+          url: '{{ path('app_reclamation_test_search') }}',
+          type: 'GET',
+          dataType: 'json',
+          success: function(data) {
+            console.log('Test search response:', data);
+
+            // Update the table with test results
+            updateReclamationsTable(data.reclamations);
+
+            // Update result count and show results info
+            $('#resultCount').text(data.count);
+            $('#searchResults').html('<span class="text-success">Test successful!</span>').show();
+
+            // Hide loading indicator
+            $('#searchLoader').hide();
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX error during test search:', error);
+            console.error('Status:', status);
+            console.error('Response:', xhr.responseText);
+
+            // Hide loading indicator
+            $('#searchLoader').hide();
+
+            // Show error message
+            $('#searchResults').html('<span class="text-danger">Test failed: ' + error + '</span>').show();
+          }
+        });
+      });
+
+      // AJAX search functionality
+      $('#searchReclamation').on('input', debounce(function() {
+        const searchTerm = $(this).val().trim();
+
+        // Show/hide clear button based on search term
+        if (searchTerm.length > 0) {
+          $('#clearSearch').show();
+        } else {
+          $('#clearSearch').hide();
+        }
+
+        // Perform search (even with empty term to show all results)
+        performSearch(searchTerm);
+      }, 250)); // 250ms delay - more responsive
+
+      // We'll use the existing data on page load instead of making an AJAX call
+      // This ensures we have data even if AJAX is not working
+      console.log('Page loaded - using existing data');
     });
   </script>
 {% endblock %}

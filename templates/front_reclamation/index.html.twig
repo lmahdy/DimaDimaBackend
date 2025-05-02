@@ -1,0 +1,163 @@
+{% extends 'base_frontOffice.html.twig' %}
+
+{% block title %}Liste des Réclamations{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .pagination {
+        margin: 20px 0;
+    }
+    .pagination .page-item .page-link {
+        color: #333;
+        border-color: #ddd;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+    }
+    .pagination .page-link:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .pagination .page-link:hover {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+        color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Liste des Réclamations{% endblock %}
+
+{% block body %}
+    {# Display flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="section-title">
+        <h2>Toutes les Réclamations</h2>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="input-group w-100">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une réclamation...">
+                    <div class="input-group-append">
+                        <button class="btn btn-dark" type="button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ path('front_reclamation_new') }}" class="btn btn-primary">
+                <i class="fa fa-plus"></i> Nouvelle Réclamation
+            </a>
+        </div>
+    </div>
+
+    <div class="row" id="reclamationsList">
+        {% if pagination.items is empty %}
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    Aucune réclamation trouvée.
+                </div>
+            </div>
+        {% else %}
+            {% for reclamation in pagination %}
+                <div class="col-lg-6 mb-4 reclamation-item">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Réclamation #{{ reclamation.id }}</h5>
+                            <span class="badge badge-{% if reclamation.statut == 'New' %}primary{% elseif reclamation.statut == 'In Progress' %}warning{% elseif reclamation.statut == 'Waiting for Response' %}info{% else %}success{% endif %}">
+                                {{ reclamation.statut }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ reclamation.description|length > 100 ? reclamation.description|slice(0, 100) ~ '...' : reclamation.description }}</p>
+                            <p class="text-muted">
+                                <small>Date: {{ reclamation.date|date('d/m/Y') }}</small>
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('front_reclamation_show', {'id': reclamation.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-eye"></i> Voir détails
+                                </a>
+                                <div>
+                                    <a href="{{ path('front_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa fa-edit"></i> Modifier
+                                    </a>
+                                    <form method="post" action="{{ path('front_reclamation_delete', {'id': reclamation.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="navigation d-flex justify-content-center">
+                {{ knp_pagination_render(pagination, 'pagination/bootstrap_v4_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const reclamationItems = document.querySelectorAll('.reclamation-item');
+        const paginationLinks = document.querySelectorAll('.pagination a');
+
+        // Client-side search functionality
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            reclamationItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // If search is active, hide pagination
+            const paginationContainer = document.querySelector('.navigation');
+            if (searchTerm.length > 0) {
+                if (paginationContainer) paginationContainer.style.display = 'none';
+            } else {
+                if (paginationContainer) paginationContainer.style.display = 'flex';
+            }
+        });
+
+        // Add active class to current page link
+        paginationLinks.forEach(link => {
+            if (link.getAttribute('href') === window.location.pathname + window.location.search) {
+                link.parentElement.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

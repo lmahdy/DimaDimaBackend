@@ -36,7 +36,6 @@ final class ReponseController extends AbstractController{
     }
 
     #[Route('/new', name: 'app_reponse_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Only administrators can create responses')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         // Get reclamations for the dropdown
@@ -203,7 +202,6 @@ final class ReponseController extends AbstractController{
     }
 
     #[Route('/{id}/edit', name: 'app_reponse_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Only administrators can edit responses')]
     public function edit(Request $request, EntityManagerInterface $entityManager, int $id): Response
     {
         // Use a custom query to fetch a single response
@@ -357,7 +355,6 @@ final class ReponseController extends AbstractController{
     }
 
     #[Route('/{id}', name: 'app_reponse_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN', message: 'Only administrators can delete responses')]
     public function delete(Request $request, EntityManagerInterface $entityManager, int $id): Response
     {
         if ($this->isCsrfTokenValid('delete'.$id, $request->getPayload()->getString('_token'))) {

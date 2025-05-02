@@ -1,0 +1,187 @@
+{% extends 'base_frontOffice.html.twig' %}
+
+{% block title %}Détails de la Réclamation{% endblock %}
+
+{% block header_title %}Détails de la Réclamation #{{ reclamation.id }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/grammar-checker.css') }}">
+{% endblock %}
+
+{% block body %}
+    {# Display flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="section-title">
+        <h2>Réclamation #{{ reclamation.id }}</h2>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Informations de la réclamation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold">Description:</h6>
+                            <div class="description-container">
+                                <p id="description-text">{{ reclamation.description }}</p>
+                                <button id="check-grammar-btn" class="btn btn-sm btn-outline-info grammar-check-btn">
+                                    <i class="fa fa-check-circle"></i> Vérifier la grammaire
+                                </button>
+
+                                <div id="grammar-loading" class="grammar-loading">
+                                    <div class="grammar-spinner"></div>
+                                    <span class="ml-2">Vérification en cours...</span>
+                                </div>
+
+                                <div id="grammar-results" class="grammar-results"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold">Statut:</h6>
+                            <span class="badge badge-{{ reclamation.statut == 'New' ? 'primary' : (reclamation.statut == 'In Progress' ? 'warning' : 'success') }}">
+                                {{ reclamation.statut }}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="font-weight-bold">Date:</h6>
+                            <p>{{ reclamation.date|date('d/m/Y') }}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('front_reclamation_index') }}" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left"></i> Retour à la liste
+                            </a>
+                            <div>
+                                <a href="{{ path('front_reclamation_pdf', {'id': reclamation.id}) }}" class="btn btn-info" target="_blank">
+                                    <i class="fa fa-file-pdf"></i> Exporter PDF
+                                </a>
+                                <a href="{{ path('front_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-primary">
+                                    <i class="fa fa-edit"></i> Modifier
+                                </a>
+                                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                                    <i class="fa fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Réponses -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Réponses ({{ reponses|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for reponse in reponses %}
+                            <div class="media mb-4 pb-4 {% if not loop.last %}border-bottom{% endif %}">
+                                <div class="media-body">
+                                    <h6 class="mt-0 mb-1">Réponse #{{ reponse.id }}</h6>
+                                    <p>{{ reponse.description }}</p>
+                                    <small class="text-muted">Date: {{ reponse.date|date('d/m/Y') }}</small>
+                                    <div class="mt-2">
+                                        <a href="{{ path('front_reponse_show', {'id': reponse.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-eye"></i> Voir détails
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-center">Aucune réponse pour cette réclamation.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer cette réclamation? Cette action est irréversible.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <form method="post" action="{{ path('front_reclamation_delete', {'id': reclamation.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                        <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/grammar-checker.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkGrammarBtn = document.getElementById('check-grammar-btn');
+            const descriptionText = document.getElementById('description-text');
+            const grammarResults = document.getElementById('grammar-results');
+            const grammarLoading = document.getElementById('grammar-loading');
+
+            checkGrammarBtn.addEventListener('click', function() {
+                const text = descriptionText.textContent.trim();
+
+                if (!text) {
+                    alert('Aucun texte à vérifier.');
+                    return;
+                }
+
+                // Show loading indicator
+                grammarLoading.style.display = 'flex';
+                grammarResults.style.display = 'none';
+
+                // Simulate a small delay for better UX
+                setTimeout(function() {
+                    // Check grammar
+                    const results = checkFrenchGrammar(text);
+
+                    // Hide loading indicator
+                    grammarLoading.style.display = 'none';
+
+                    // Show results
+                    grammarResults.innerHTML = createGrammarCorrectionUI(results);
+                    grammarResults.style.display = 'block';
+
+                    // Add click event to grammar mistakes
+                    document.querySelectorAll('.grammar-mistake').forEach(function(element) {
+                        element.addEventListener('click', function() {
+                            const original = this.getAttribute('data-original');
+                            const replacement = this.getAttribute('data-replacement');
+
+                            // Replace the text with the correction
+                            this.innerHTML = replacement;
+                            this.classList.remove('grammar-mistake');
+                            this.removeAttribute('data-original');
+                            this.removeAttribute('data-replacement');
+                            this.removeAttribute('title');
+                        });
+                    });
+                }, 500);
+            });
+        });
+    </script>
+{% endblock %}

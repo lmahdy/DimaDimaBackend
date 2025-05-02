@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Réclamation #{{ reclamation.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #0056b3;
+        }
+        .info-section {
+            margin-bottom: 30px;
+        }
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-content {
+            margin-bottom: 15px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-new {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-progress {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-resolved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .responses-section {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .response-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .response-item:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">OUR BATIMA</div>
+            <div>Système de Gestion des Réclamations</div>
+        </div>
+        
+        <h1>Réclamation #{{ reclamation.id }}</h1>
+        
+        <div class="info-section">
+            <div class="info-title">Description:</div>
+            <div class="info-content">{{ reclamation.description }}</div>
+            
+            <div class="info-title">Statut:</div>
+            <div class="info-content">
+                <span class="status {% if reclamation.statut == 'New' %}status-new{% elseif reclamation.statut == 'In Progress' %}status-progress{% else %}status-resolved{% endif %}">
+                    {{ reclamation.statut }}
+                </span>
+            </div>
+            
+            <div class="info-title">Date:</div>
+            <div class="info-content">{{ reclamation.date|date('d/m/Y') }}</div>
+        </div>
+        
+        <div class="responses-section">
+            <h2>Réponses ({{ reponses|length }})</h2>
+            
+            {% if reponses|length > 0 %}
+                {% for reponse in reponses %}
+                    <div class="response-item">
+                        <div class="info-title">Réponse #{{ reponse.id }}</div>
+                        <div class="info-content">{{ reponse.description }}</div>
+                        <div class="info-content">
+                            <small>Date: {{ reponse.date|date('d/m/Y') }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Aucune réponse pour cette réclamation.</p>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>Document généré le {{ "now"|date('d/m/Y H:i:s') }}</p>
+            <p>© {{ "now"|date('Y') }} OUR BATIMA - Tous droits réservés</p>
+        </div>
+    </div>
+</body>
+</html>
