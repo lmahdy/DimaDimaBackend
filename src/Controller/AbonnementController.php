@@ -105,7 +105,19 @@ final class AbonnementController extends AbstractController
     
         if (!$abonnement || !$utilisateur) {
             $this->addFlash('error', 'Abonnement ou utilisateur introuvable.');
-            return $this->redirectToRoute('abonnement_liste');
+            return$this->render('welcomeFront/index.html.twig', [
+                'user' => $this->getUser()
+            ]);
+        }
+        $existingAbonnement = $em->getRepository(UserAbonnement::class)->findOneBy([
+            'utilisateur' => $utilisateur,
+            'statut' => 'actif'
+        ]);
+        if ($existingAbonnement) {
+            $this->addFlash('success', 'Vous avez déjà un abonnement actif.');
+            return $this->render('welcomeFront/index.html.twig', [
+                'user' => $this->getUser()
+            ]);
         }
     
         $userAbonnement = new UserAbonnement();
