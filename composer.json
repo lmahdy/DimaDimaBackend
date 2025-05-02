@@ -15,7 +15,7 @@
         "doctrine/orm": "^3.3",
 
         "knplabs/knp-paginator-bundle": "^6.8",
-$
+
         "easycorp/easyadmin-bundle": "^4.24",
         "google/cloud-vision": "^2.0",
         "grpc/grpc": "^1.57",

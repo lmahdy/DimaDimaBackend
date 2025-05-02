@@ -189,6 +189,12 @@
         </div>
     </div>
 
+    <!-- Bot Toggle Button -->
+    <div class="col-12 mt-3 text-center">
+        <button id="bot-toggle" class="btn btn-primary">Bot</button>
+        <p id="bot-status" class="mt-2">Click the button to start the assistant.</p>
+    </div>
+
     <!-- Article History Section -->
     <div class="col-12 mt-5">
         <div class="card">
@@ -326,6 +332,24 @@
         createPieChart(etapeCtx, etapePercentages, '{{ 'par_etape_de_projet'|trans }}');
         createPieChart(stockCtx, stockPercentages, '{{ 'par_stock'|trans }}');
         createPieChart(fournisseurCtx, fournisseurPercentages, '{{ 'par_fournisseur'|trans }}');
+
+        // Function to toggle the bot
+        let botRunning = false;
+
+        document.getElementById('bot-toggle').addEventListener('click', () => {
+            const url = botRunning ? 'http://127.0.0.1:5000/stop' : 'http://127.0.0.1:5000/start';
+            fetch(url, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    botRunning = !botRunning;
+                    document.getElementById('bot-status').innerText = botRunning
+                        ? 'The assistant is running.'
+                        : 'The assistant has stopped.';
+                })
+                .catch(error => {
+                    document.getElementById('bot-status').innerText = 'Error: ' + error;
+                });
+        });
     </script>
 {% endblock %}
 {% endblock %}
