@@ -1,5 +1,59 @@
+<!-- Top Bar Start -->
+<div class="top-bar">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-lg-4 col-md-12">
+                <div class="logo">
+                    <a href="{{ path('home') }}">
+                        <h1>OurBatima</h1>
+                        <!-- <img src="{{ asset('img/logo.jpg') }}" alt="Logo"> -->
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-7 d-none d-lg-block">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="top-bar-item">
+                            <div class="top-bar-icon">
+                                <i class="flaticon-calendar"></i>
+                            </div>
+                            <div class="top-bar-text">
+                                <h3>Heures d'ouverture</h3>
+                                <p>Lun - Ven, 8:00 - 17:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="top-bar-item">
+                            <div class="top-bar-icon">
+                                <i class="flaticon-call"></i>
+                            </div>
+                            <div class="top-bar-text">
+                                <h3>Appelez-nous</h3>
+                                <p>+216 12 345 678</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="top-bar-item">
+                            <div class="top-bar-icon">
+                                <i class="flaticon-send-mail"></i>
+                            </div>
+                            <div class="top-bar-text">
+                                <h3>Email</h3>
+                                <p>contact@ourbatima.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Top Bar End -->
+
 <!-- Nav Bar Start -->
-<div class="nav-bar">
+<div class="nav-bar" id="mainNav">
     <div class="container-fluid">
         <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
             <a href="#" class="navbar-brand">MENU</a>
@@ -9,8 +63,15 @@
 
             <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                 <div class="navbar-nav mr-auto">
+                    <a href="{{ path('home') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'home' %}active{% endif %}">Accueil</a>
+                    <a href="{{ path('service') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'service' %}active{% endif %}">Services</a>
+                    <a href="{{ path('contact') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'contact' %}active{% endif %}">Contact</a>
+                    <a href="{{ path('team') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') == 'team' %}active{% endif %}">Equipe</a>
+                     
+                     
                     <a href="{{ path('front_reclamation_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'front_reclamation_' %}active{% endif %}">Réclamations</a>
                     <a href="{{ path('front_reponse_index') }}" class="nav-item nav-link {% if app.request.attributes.get('_route') starts with 'front_reponse_' %}active{% endif %}">Réponses</a>
+
                 </div>
                 <div class="ml-auto">
                     {% if app.user %}
