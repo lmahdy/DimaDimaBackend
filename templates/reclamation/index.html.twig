@@ -178,17 +178,6 @@
         <i class="material-symbols-rounded me-1">question_answer</i>
         Voir les Réponses
       </a>
-      {% if app.user %}
-      <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary ms-2">
-        <i class="material-symbols-rounded me-1">logout</i>
-        Déconnexion
-      </a>
-      {% else %}
-      <a href="{{ path('app_login') }}" class="btn btn-outline-primary ms-2">
-        <i class="material-symbols-rounded me-1">login</i>
-        Connexion
-      </a>
-      {% endif %}
     </div>
   </div>
 {% endblock %}
