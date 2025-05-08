@@ -16,5 +16,47 @@
         "article_id": 1,
         "article_name": "articel A",
         "timestamp": "2025-05-02 12:55:36"
+    },
+    {
+        "action": "deleted",
+        "article_id": 15,
+        "article_name": "equipment B",
+        "timestamp": "2025-05-08 10:50:31"
+    },
+    {
+        "action": "deleted",
+        "article_id": 17,
+        "article_name": "Marteua",
+        "timestamp": "2025-05-08 10:50:36"
+    },
+    {
+        "action": "deleted",
+        "article_id": 18,
+        "article_name": "equipment Bxx",
+        "timestamp": "2025-05-08 10:50:40"
+    },
+    {
+        "action": "deleted",
+        "article_id": 19,
+        "article_name": "xcc",
+        "timestamp": "2025-05-08 10:50:44"
+    },
+    {
+        "action": "deleted",
+        "article_id": 22,
+        "article_name": "equipment Bxx",
+        "timestamp": "2025-05-08 10:50:48"
+    },
+    {
+        "action": "created",
+        "article_id": 23,
+        "article_name": "equipment A",
+        "timestamp": "2025-05-08 10:51:14"
+    },
+    {
+        "action": "created",
+        "article_id": 24,
+        "article_name": "equipment B",
+        "timestamp": "2025-05-08 10:52:19"
     }
 ]

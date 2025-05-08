@@ -287,7 +287,7 @@
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: data.map(item => ${item.label} (${item.percentage}%)),
+                    labels: data.map(item => `${item.label} (${item.percentage}%)`), // Fixed syntax error here
                     datasets: [{
                         data: data.map(item => item.count),
                         backgroundColor: [
@@ -315,7 +315,7 @@
                                     const label = context.label || '';
                                     const value = context.raw;
                                     const percentage = data[context.dataIndex].percentage;
-                                    return ${label}: ${value} articles (${percentage}%);
+                                    return `${label}: ${value} articles (${percentage}%)`; // Fixed syntax error here
                                 }
                             }
                         }
